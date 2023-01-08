@@ -21,10 +21,16 @@ public class GameManager : MonoBehaviour
     public Button policeButton;
 
     public Text resourceText;
+    public Text RaidText;
+    public Text RaidCount;
+    public Text EndGameCounts;
+    public Text WinGameCounts;
 
     public int workerCount;
     public int policeCount;
     public int moneyCount;
+    public int workerWinCount;
+    public int moneyWinCount;
 
     public int moneyperWorker;
     public int moneytoPolice;
@@ -37,6 +43,8 @@ public class GameManager : MonoBehaviour
     public float raidMaxTime;
     public int raidIncrease;
     public int nextRaid;
+    public int MaxRaidsTurns;
+    public int RaidTurn;
     public GameObject WinScreen;
     public GameObject GameOverScreen;
     private float workerTimer = -2;
@@ -59,11 +67,17 @@ public class GameManager : MonoBehaviour
     {
         raidTimer -= Time.deltaTime;
         RaidTimer.fillAmount = raidTimer / raidMaxTime;
-        if(raidTimer <= 0)
+        RaidText.text = "Следующий рейд: " + nextRaid;
+        RaidCount.text = "Волна: " + RaidTurn;
+        if (raidTimer <= 0)
         {
             raidTimer = raidMaxTime;
-            policeCount -= nextRaid;
-            nextRaid += raidIncrease;
+            RaidTurn += 1;
+            if (RaidTurn > 3)
+            {
+                policeCount -= nextRaid;
+                nextRaid += raidIncrease;
+            }
         }
         if (MoneyFarmingTimer.Tick)
         {
@@ -99,20 +113,28 @@ public class GameManager : MonoBehaviour
             policeTimer = -2;
             PoliceSound.Play();
         }
-
         UpdateText();
+        if (moneyCount >= moneyWinCount || workerCount >= workerWinCount)
+        {
+            Time.timeScale = 0;
+            WinScreen.SetActive(true);
+            WinGameCounts.text = "Пережито набегов: " + RaidTurn + "\n" + "Всего рабочих: " + workerCount + "\n" + "Заработано денег: " + moneyCount;
+        }
+        if (RaidTurn >= MaxRaidsTurns)
+        {
+            Time.timeScale = 0;
+            WinScreen.SetActive(true);
+            WinGameCounts.text = "Пережито набегов: " + RaidTurn + "\n" + "Всего рабочих: " + workerCount + "\n" + "Заработано денег: " + moneyCount;
+        }
         if (policeCount < 0)
         {
             Time.timeScale = 0;
             GameOverScreen.SetActive(true);
+            EndGameCounts.text = "Пережито набегов: " + RaidTurn + "\n" + "Всего рабочих: " + workerCount + "\n" + "Заработано денег: " +moneyCount;
         }
-        if (moneyCount == 200)
-        {
-            Time.timeScale = 0;
-            WinScreen.SetActive(true);
-        }
+
     }
-    public void CreateWoker()
+    public void CreateWorker()
     {
         if(moneyCount < workerCost)
         {
